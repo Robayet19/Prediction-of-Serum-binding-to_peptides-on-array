@@ -1,3 +1,5 @@
+# The program gives a set of optimized parameters such as combination of hidden layers and hidden nodes and evaluate the performance using Pearson Correlation Coefficient (R)
+
 # ---Neural Network for Peptide Array Interpolation--- #
 #
 # Architecture:
