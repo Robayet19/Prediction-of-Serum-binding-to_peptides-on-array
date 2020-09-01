@@ -1,3 +1,5 @@
+# This program was written Robayet Chowdhury
+
 from typing import Union, Iterable
 
 import numpy as np
