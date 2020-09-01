@@ -1,3 +1,6 @@
+# This program was originally written Dr. Alexandar Taguchi and later significantly modified by Robayet chowdhury
+# The program evaluates the performance (Pearson Correlation Coefficient (R)) of a NN model as a function of different numbre of peptides in a training set
+
 # ---Neural Network for Peptide Array Interpolation--- #
 #
 # Architecture:
