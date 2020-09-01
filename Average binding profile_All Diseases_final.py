@@ -1,4 +1,4 @@
-
+# The program was written by Robayet. It gives a figure of mean binding distribution of serum Antibody bindings to peptides in different disease cases.
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
