@@ -1,3 +1,4 @@
+% This is jointly written in MATLAB by Robayet chowdhury
 %This takes a fit from the machine learning algorithm and maps predicted
 %binding onto protein sequences and structures from the PDB.  It then compares this to a scrambled set
 %of sequences if desired
@@ -327,7 +328,7 @@ if ~read_singleSample
 end
 
 
-% Robayet partly wrote these lines of code
+% Robayet wrote these lines of code
 %****************************************
 N=Ntot;
 %Now scramble sequences and calculate Z scores
