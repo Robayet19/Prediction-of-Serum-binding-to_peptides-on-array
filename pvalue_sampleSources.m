@@ -1,9 +1,9 @@
-%% This script calculates the pvalues between two sets of samples for Dengue,
-% and between case samples and normal samples
+% The program was written by Robayet
+%% This script calculates the pvalues between two sets of samples for Dengue,and between case samples and normal samples
 
 clear
 clc
-pval_Dengue = false(1); % turn it rue for Dengue infected samples
+pval_Dengue = false(1); % turn it true for Dengue infected samples
 median_normalize=true(1);%if you median normalize, I assume you want to resave
 bad_sample_tracking = true(1); % print out bad sample ID and its source
 save_DENV_diffSample = true(1);
