@@ -1,3 +1,5 @@
+# This program was originally written Dr. Alexandar Taguchi and later modified by Robayet chowdhury
+
 # ---Neural Network for Peptide Array Interpolation--- #
 #
 # Architecture:
