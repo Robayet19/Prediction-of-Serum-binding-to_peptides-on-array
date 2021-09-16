@@ -89,6 +89,7 @@ weightSave = True  # save weights to file - default: False
 # ~~~~~~~~~~ADDITIONAL PARAMETERS~~~~~~~~~~ #
 aminoAcids = 'ADEFGHKLNPQRSVWY'  # letter codes - default: 'ADEFGHKLNPQRSVWY'
 batch = 100  # batch size for training - default: 100
+Batch_normalization = False  # perform 1D batch normalization in hidden layer/s
 epoch = 5  # no of times the dataset to be run - default: 2
 dataSaturation = 0.995  # saturation threshold for training - default: 0.995
 dataShift = 0.01  # added to data before log10 (False for linear) - default: 100
@@ -262,6 +263,7 @@ def training(params):
                     self.AminoLayer = nn.Linear(len(aminoAcids), aminoEigen, bias=True)
                 else:
                     self.AminoLayer = nn.Linear(len(aminoAcids), aminoEigen, bias=False)
+                self.Amino_BatchNorm = nn.BatchNorm1d(int(max_len * aminoEigen))  # applying batch normalization
                 if Bias_HiddenLayer:
                     self.HiddenLayers = nn.ModuleList(
                         [nn.Linear(int(max_len * aminoEigen), width, bias=True)])
@@ -271,6 +273,7 @@ def training(params):
                         [nn.Linear(int(max_len * aminoEigen), width, bias=False)])
                     self.HiddenLayers.extend(
                         [nn.Linear(width, width, bias=False) for _ in range(layers - 1)])
+                self.Hidden_BatchNorm = nn.BatchNorm1d(width)  # applying batch normalization
 
                 self.OutputLayer = nn.Linear(width, 1, bias=True)
                 self.dropout = nn.Dropout(p=drop)
@@ -279,7 +282,11 @@ def training(params):
                 out = seq.view(-1, len(aminoAcids))
                 out = self.AminoLayer(out)
                 out = out.view(-1, int(max_len * aminoEigen))
-                for x in self.HiddenLayers:
+                if Batch_normalization:
+                    out = self.Amino_BatchNorm(out)  # applying batch normalization
+                for j, x in enumerate(self.HiddenLayers):
+                    if j !=0 :
+                        out = self.Hidden_BatchNorm(out)  # applying batch normalization on the second layer and beyond
                     out = self.dropout(functional.relu(x(out)))
                 out = self.OutputLayer(out)
                 return out
