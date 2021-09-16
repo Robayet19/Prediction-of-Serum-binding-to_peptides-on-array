@@ -6,8 +6,8 @@
 # Architecture:
 #    Input: Sequence (residue number x amino acid type matrix),
 #    Neural Network: 1 fully connected hidden layer to encode
-#        amino acid eigenvectors (w/o relu or bias), a flattening
-#        operation, multiple fully connected hidden layers (w/o bias),
+#        amino acid eigenvectors , a flattening
+#        operation, multiple fully connected hidden layers ,
 #        and 1 regression output layer
 #    Output: Predicted binding value (float)
 #
@@ -77,32 +77,13 @@ Bias_inputLayer = True  # add bias to amino layer  -default: False
 Bias_HiddenLayer = True  # add bias to hiddenlayers -default: False
 aminoEigen = 5  # number of features to describe amino acids - default: 10
 drop_prob = 0.1
-# filename = 'sequence_data_NIBIB_Dengue_ML_CTSSeraCare_mod_CV317-Jul-2020-00-08.csv' # import sequence and binding data
-# filename = 'sequence_data_NIBIB_Normal_ML_mod_CV315-Jul-2020-23-50.csv'
-# filename = 'sequence_data_NIBIB_WNV_ML_mod_CV315-Jul-2020-23-57.csv'
-# filename = 'sequence_data_NIBIB_HCV_ML_mod_CV317-Jul-2020-16-50.csv'
-# filename = 'sequence_data_NIBIB_HBV_ML_mod_CV316-Jul-2020-00-01.csv'
-# filename = 'sequence_data_NIBIB_Chagas_ML_mod_CV316-Jul-2020-00-02.csv'
+filename = 'sequence_data_NIBIB_Dengue_ML_CTSSeraCare_mod_CV317-Jul-2020-00-08.csv' # import sequence and binding data
 # filename = 'NIBIB_Dengue4(CTSSera)ND_Zscore_multisample_eval_CV3.cs♦v'
-# filename = 'NIBIB_DENV(CTSSera)vsChagas_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_DENV(CTSSera)vsHBV_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_DENV(CTSSera)vsHCV_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_DENV(CTSSera)vsWNV_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_WNVvsND_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_WNVvsHCV_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_WNVvsHBV_CV3_Zscore_multisample_eval.csv'
-# filename = 'NIBIB_WNVvsChagas_CV3_Zscore_multisample_eval.csv'
-filename = 'NIBIB_HCVvsChagas_Zscore_CV3_multisample_eval.csv'
-# filename = 'NIBIB_HCVvsND_Zscore_CV3_multisample_eval.csv'
-# filename = 'NIBIB_HCVvsHBV_Zscore_CV3_multisample_eval.csv'
-# filename = 'NIBIB_HBVND_Z score_CV3_multisample_eval.csv'
-# filename = 'NIBIB_HBVvsChagas_Zscore_CV3_multisample_eval.csv'
-# filename = 'NIBIB_ChagasvsND_Zscore_CV3_multisample_eval.csv'
-hiddenLayers = 4  # number of hidden layers - default: 1
-hiddenWidth = 50  # width of hidden layers - default: 100
-trainSteps = 50000  # number of training steps - default: 20000
-trainingMode = 1  # train all ('all'), individuals (1, 2, 3...), or average ('avg')
-weightFolder = 'NIBIB_HCV_CV3_Zfit'  # name of folder for saving weights and biases
+hiddenLayers = 2  # number of hidden layers - default: 1
+hiddenWidth = 250  # width of hidden layers - default: 100
+trainSteps = 20000  # number of training steps - default: 20000
+trainingMode = 'all'  # train all ('all'), individuals (1, 2, 3...), or average ('avg')
+weightFolder = 'NIBIB_DENV_samplefits'  # name of folder for saving weights and biases
 weightSave = True  # save weights to file - default: False
 
 # ~~~~~~~~~~ADDITIONAL PARAMETERS~~~~~~~~~~ #
@@ -146,9 +127,9 @@ elif trainingMode == 'avg' or trainingMode == 1:
 load_array = False  #
 showFigure = False
 sampleOfinterest = False  # plot results for only one sample
-new_file = '/CorrVsPepNum_HCVvsChagas.txt'  # save the correlation coefficients in a text file
+new_file = '/CorrVsPepNum_DENV_samples.txt'  # save the correlation coefficients in a text file
 
-cc
+
 def training(params):
     trainFraction = params[0]
     trainingMode = params[1]
@@ -170,7 +151,7 @@ def training(params):
     # Import csv (first column is the sequences followed by the binding data)
     data = pd.read_csv(filename, header=None)
     if Select_pepTest:
-        # pick a set of peptides randomly for test set
+        # select a set of peptides randomly for test set
         testSet_index = np.array(
             random.sample(list(range(0, total_peptides)), int((1 - trainFraction) * total_peptides)))
         # create an array of '0's and '1's to divide the dataset into test
@@ -274,7 +255,6 @@ def training(params):
     # ~~~~~~~~~~NEURAL NETWORK~~~~~~~~~~ #
 
     class NeuralNet(nn.Module):
-        if dropOut_regularization:
             def __init__(self, width, layers, drop):
                 super().__init__()
 
@@ -304,37 +284,8 @@ def training(params):
                     out = self.dropout(functional.relu(x(out)))
                 out = self.OutputLayer(out)
                 return out
-        else:
-            def __init__(self, width, layers):
-                super().__init__()
 
-                # Network layers
-                if Bias_inputLayer:
-                    self.AminoLayer = nn.Linear(len(aminoAcids), aminoEigen, bias=True)
-                else:
-                    self.AminoLayer = nn.Linear(len(aminoAcids), aminoEigen, bias=False)
-                if Bias_HiddenLayer:
-                    self.HiddenLayers = nn.ModuleList([nn.Linear(int(max_len * aminoEigen), width, bias=True)])
-                    self.HiddenLayers.extend([nn.Linear(width, width, bias=True) for _ in range(layers - 1)])
-                else:
-                    self.HiddenLayers = nn.ModuleList([nn.Linear(int(max_len * aminoEigen), width, bias=False)])
-                    self.HiddenLayers.extend([nn.Linear(width, width, bias=False) for _ in range(layers - 1)])
-
-                self.OutputLayer = nn.Linear(width, 1, bias=True)
-
-            def forward(self, seq):
-                out = seq.view(-1, len(aminoAcids))
-                out = self.AminoLayer(out)
-                out = out.view(-1, int(max_len * aminoEigen))
-                for x in self.HiddenLayers:
-                    out = functional.relu(x(out))
-                out = self.OutputLayer(out)
-                return out
-
-    if dropOut_regularization:
-        net = NeuralNet(width=hiddenWidth, layers=hiddenLayers, drop=drop_prob).to(device)
-    else:
-        net = NeuralNet(width=hiddenWidth, layers=hiddenLayers).to(device)
+    net = NeuralNet(width=hiddenWidth, layers=hiddenLayers, drop=drop_prob).to(device)
     print('\nARCHITECTURE:')
     print(net)
 
@@ -409,7 +360,6 @@ def training(params):
     test_real = test_data.data.cpu().numpy()
     correlation = np.corrcoef(test_real, test_prediction)[0, 1]
     print('Correlation Coefficient: %.3f' % correlation)
-    # corr_array_tem[0, rep_num] = correlation
 
     # ~~~~~~~~~~PLOTTING~~~~~~~~~~ #
     # Extract weights from model
@@ -432,7 +382,7 @@ def training(params):
     # Scatter plot of predicted vs real
     fig1, ax = plt.subplots()
     if trainFraction == 0.9:
-        #  calculate the point density
+        #  calculate the point density 
         from scipy.stats import gaussian_kde
         # if you have not  imported gaussian_kde at the begining (~modules~),then import it here
         test_xy = np.vstack([test_real, test_prediction])
@@ -462,12 +412,6 @@ def training(params):
         amino_similar = np.linalg.norm(amino_layer, axis=1)
         amino_similar = np.array([aminoEigen * [magnitude] for magnitude in amino_similar])
         amino_similar = np.dot((amino_layer / amino_similar), np.transpose(amino_layer / amino_similar))
-
-    # Eigenvector orthogonality matrix
-    # amino_trans = np.transpose(amino_layer)
-    # amino_ortho = np.linalg.norm(amino_trans, axis=1)
-    # amino_ortho = np.array([len(aminoAcids) * [magnitude] for magnitude in amino_ortho])
-    # amino_ortho = np.dot((amino_trans / amino_ortho), np.transpose(amino_trans / amino_ortho))
 
     # Plot amino acid similarity matrix
     fig2 = plt.matshow(amino_similar, cmap='coolwarm')
@@ -578,8 +522,6 @@ if __name__ == '__main__':
             for j in sampleIndex_array:
                 for k in range(epoch):
                     params.append((ts, j, k))
-            # with concurrent.futures.ProcessPoolExecutor(num_workers) as executor:
-            #     result = executor.map(training, params)
             pool = Pool(num_workers)
             result = pool.map(training, params)
             result = np.reshape(result, (num_samples_used, epoch))
@@ -595,9 +537,6 @@ if __name__ == '__main__':
             params = []
             for k in range(epoch):
                 params.append((ts, -1, k))
-            #
-            # with concurrent.futures.ProcessPoolExecutor(num_workers) as executor:
-            #     result = executor.map(training, params)
             pool = Pool(num_workers)
             result = pool.map(training, params)
             for j, slice_result in enumerate(result):
@@ -612,8 +551,6 @@ if __name__ == '__main__':
             params = []
             for k in range(epoch):
                 params.append((ts, trainingMode, k))
-            # with concurrent.futures.ProcessPoolExecutor(num_workers) as executor:
-            #     result = executor.map(training, params)
             pool = Pool(num_workers)
             result = pool.map(training, params)
             for j, slice_result in enumerate(result):
@@ -654,17 +591,13 @@ if __name__ == '__main__':
         plt.gca().set_prop_cycle('color', colors)
         labels = []
         for i in range(0, len(sampleIndex_array)):
-            # plt.errorbar(np.multiply(train_array, 100), mean_trans[i], np.transpose(error_array)[i], linestyle='--',
-            #               marker='o', capsize=3.5)
             plt.errorbar(np.multiply(train_array, total_peptides), mean_trans[i], np.transpose(error_array)[i],
                          linestyle='--',
                          marker='o', capsize=3.5)
-            # plt.xlabel('% of total peptides in training set', fontsize=10)
             plt.xlabel('no of peptides in training set', fontsize=10)
             plt.ylabel('Pearson Correlation Coefficient', fontsize=10)
             plt.xlim([-4200, 120000])
             plt.ylim([0.75, 1])
-            # plt.title('Correlation Coefficient vs % of total peptides in training set', fontsize=12)
             labels.append('S %i' % sampleIndex_array[i])
             plt.legend(labels, ncol=1, loc=6, bbox_to_anchor=[1, 0.5], columnspacing=1.0, labelspacing=1,
                        handletextpad=0.0, handlelength=2, fancybox=False, shadow=False, borderaxespad=0., mode='expand')
