@@ -1,4 +1,4 @@
-# This program was originally written Dr. Alexandar Taguchi and later significantly modified by Robayet chowdhury
+# This program was originally written by Dr. Alexandar Taguchi and later significantly modified by Robayet chowdhury
 # The program evaluates the performance (Pearson Correlation Coefficient (R)) of a NN model as a function of different numbre of peptides in a training set
 
 # ---Neural Network for Peptide Array Interpolation--- #
@@ -91,8 +91,7 @@ aminoAcids = 'ADEFGHKLNPQRSVWY'  # letter codes - default: 'ADEFGHKLNPQRSVWY'
 batch = 100  # batch size for training - default: 100
 epoch = 5  # no of times the dataset to be run - default: 2
 dataSaturation = 0.995  # saturation threshold for training - default: 0.995
-dataShift = False  # added to data before log10 (False for linear) - default: 100
-dropOut_regularization = False
+dataShift = 0.01  # added to data before log10 (False for linear) - default: 100
 gpuTraining = False  # allow for GPU training - default: False
 learnRate = 0.001  # magnitude of gradient descent step - default: 0.001
 minResidues = 3  # minimum sequence length
