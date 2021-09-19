@@ -76,7 +76,7 @@ moduleScope = dir()
 Bias_inputLayer = True  # add bias to amino layer  -default: False
 Bias_HiddenLayer = True  # add bias to hiddenlayers -default: False
 aminoEigen = 5  # number of features to describe amino acids - default: 10
-drop_prob = 0.1 # probability of retaining nodes in a hidden layer -default: 1
+drop_prob = 0.1 # probability of removing nodes in a hidden layer -default: 1
 filename = 'sequence_data_NIBIB_Dengue_ML_CTSSeraCare_mod_CV317-Jul-2020-00-08.csv' # import sequence and binding data
 # filename = 'NIBIB_Dengue4(CTSSera)ND_Zscore_multisample_eval_CV3.cs♦v'
 hiddenLayers = 2  # number of hidden layers - default: 1
@@ -305,6 +305,8 @@ def training(params):
     print('\nTRAINING:')
     train_test_error = np.zeros((int(trainSteps / stepPrint), 2))
     for i in range(trainSteps + 1):
+        # turn on evaluation mode to stop using dropout method
+        net.eval() 
 
         # Select indices for training
         if uniformBGD:
@@ -360,8 +362,11 @@ def training(params):
             # Print out
             print('Step %5d: train|test accuracy: %.2f|%.2f' %
                   (i, train_accuracy, test_accuracy))
+        # turn on training mode to use dropout method
+        net.train()  
 
     # Run test set through optimized neural network
+    net.eval()  # turn on evaluation mode to stop using dropout method
     test_prediction = torch.squeeze(net(test_seq)).data.cpu().numpy()
     test_real = test_data.data.cpu().numpy()
     correlation = np.corrcoef(test_real, test_prediction)[0, 1]
