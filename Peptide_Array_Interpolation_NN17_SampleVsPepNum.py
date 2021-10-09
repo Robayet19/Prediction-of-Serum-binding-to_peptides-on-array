@@ -131,6 +131,16 @@ new_file = '/CorrVsPepNum_DENV_samples.txt'  # save the correlation coefficients
 
 
 def training(params):
+    """ A feed forward neural network (NN) explained below calculates binding value for a given peptide sequence. Here,
+        the NN model can be trained on antibody binding data of varying number peptide sequences in multiple individuals
+        or serum samples. Overall, this function will output a Pearson correlation coefficient value as a measure of the
+        NN model's performance.
+        
+    params : it is a set of additional parameters with a shape of [3 x 1]
+           params[0] {float}: number of peptide sequences to be used to train the NN model
+           params[1] {int or str}: index {float} of a sample in a cohort data or an average {str} of the entire cohort  
+           params[2] {int}: replicate number to train the NN model with the parameters mentioned above
+           """
     trainFraction = params[0]
     trainingMode = params[1]
     rep_num = params[2]
@@ -255,6 +265,26 @@ def training(params):
     # ~~~~~~~~~~NEURAL NETWORK~~~~~~~~~~ #
 
     class NeuralNet(nn.Module):
+          """ Fully or partially connected Feed Forward Neural Network to predict peptide binding to serum Antibodies 
+              using peptide sequence similar to the one from the paper by Taguchi & Woodbury et al,Combinatorial Science(2020)
+            
+          Architecture: 
+          Input: Peptide sequence is represented as a matrix with shape of [number of residue positions X 
+                             number of amino acids] 
+          Model: 
+               [1] Input layer: A linear encoder creates an embedding matrix through a linear transformation of one-hot 
+                                amino acid representation into a dense representation
+               [2] Hidden layers : Fully or partially connected multiple hidden layers in a Feed-Forward Neural Network
+               [3] Output layer: A linear regression model gives a continuous binding value for the input sequence                     
+          """
+        def __init__(self, width, layers, drop):
+            """ Hyperparameters associated with the Neural Network
+
+            Keyword arguments:
+                    width {int}: number of hidden nodes
+                    layers {int}: number of hidden layers
+                    drop {float} : drop out rate
+                """
             def __init__(self, width, layers, drop):
                 super().__init__()
 
